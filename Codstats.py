@@ -1,5 +1,9 @@
 # Python file which will allow usage of Call of Duty API to retrieve stats.
+import json
+import time
+from pathlib import Path
 
+import data as data
 # import API module with classes from cod_api package
 from cod_api import API, platforms
 
@@ -14,26 +18,38 @@ api.login(SSO_TOKEN)
 print("Call of Duty Stats Tracker"
       "\n---------------------------")
 loop = ''
-while loop != "q" or loop != "Q".lower():
-    # user inputs
-    game = input("Enter the Call of Duty Title (mw, mw2, cw, vg, wz): ")
-    platform = input("Enter your platform: ")
-    username = input("Enter your username: ")
+while loop != "q" or loop != "Q":
+    # input Call of Duty title
+    game = input("Enter the Call of Duty Title (mw, cw, vg, wz): ")
     if game == "mw":
-        profile = api.ModernWarfare.fullData(platforms.XBOX, username)
-    elif game == "mw2":
-        profile = api.ModernWarfare2.fullData(platforms.XBOX, "Moe613")
+        profile = api.ModernWarfare
     elif game == "cw":
-        profile = api.ColdWar.fullData(platforms.XBOX, "Moe613")
+        profile = api.ColdWar
     elif game == "vg":
-        profile = api.Vanguard.fullData(platforms.XBOX, "Moe613")
+        profile = api.Vanguard
     elif game == "wz":
-        profile = api.Warzone.fullData(platforms.XBOX, "Moe613")
+        profile = api.Warzone
 
+    # input platform
+    platform = input("Enter your platform: ")
+    if platform == "xbox" or platform == "Xbox" or platform == "XBOX":
+        client = platforms.XBOX
+    elif platform == "psn" or platform == "Psn" or platform == "PSN":
+        client = platforms.PSN
+    elif platform == "activision" or platform == "Activision":
+        client = platforms.Activision
+    elif platform == "battlenet" or platform == "Battlenet":
+        client = platforms.Battlenet
+
+    # input username
+    username = input("Enter your username: ")
+
+    user = profile.fullData(client, username)
     # retrieve profile data from api for specified game data returned as dictionary
     # relevant player information is nested in multiple dictionaries,
     # which is now stored in info
-    info = profile["data"]["lifetime"]["all"]["properties"]
+    info = user
+    print(info)
     print("---------------------------")
 
     # get KD/Ratio from properties dictionary and round to 2 decimal places
@@ -68,8 +84,42 @@ while loop != "q" or loop != "Q".lower():
         wl = round(info.get("winLossRatio"), 2)
         print("WL/Ratio: ", wl)
 
+    # This is where the captured statistics will be saved in the local directory
+    csv_file = Path("C:/Users/moham/Desktop/")
+    # Initialize counters
+    timePlayed = 0
+    kdRatio = 0
+    score = 0
+    xp = 0
+    level = 0
+    prestige = 0
+    platforms = ['battle']
+
+    fileName = "callOfDuty" + platform + ".csv"
+    outputFile = csv_file / fileName
+
+    user = profile.fullData(client, username)
+    # Pull the metrics for this player into a variable.
+    thisMetrics = user['data']['lifetime']['all']['properties']
+    timePlayed = thisMetrics['timePlayedTotal']
+
+    print("timePlayed:" + str(timePlayed) + " hours\n")
+    # print(thisMetrics)
+    title = user['data']['title']
+    kdRatio = thisMetrics['kdRatio']
+    kills = thisMetrics['kills']
+    longestKillStreak = thisMetrics['recordKillStreak']
+    bestKd = thisMetrics['bestKD']
+    mostKills = thisMetrics['recordKillsInAMatch']
+
+    # Create summary line for the csv file
+    outputCSV = "Time played: " + str(timePlayed) + "\n" + "Title: " + str(title) + "\n" + "K/D ratio: " + str(kdRatio) + "\n" + "Kills: " + str(
+        kills) + "\n" + "Longest Killstreak" + str(longestKillStreak) + "\n" + "Best K/D: " + str(bestKd) + "\n" + "Most Kills: " + str(mostKills) + "\n "
+    # Now populate the csv file for this platform
+    with open(outputFile, "w", newline='') as file:
+        file.write(outputCSV)
+
     # quit to exit while loop
-    print()
     loop = input("Q or q to quit, anything else to continue \n")
-
-
+    if loop == 'q' or loop == 'Q':
+        exit()
