@@ -1,24 +1,24 @@
 # Python file which will allow usage of Call of Duty API to retrieve stats.
-import json
-import time
+
+# import Path module from pathlib
 from pathlib import Path
 
-import data as data
 # import API module with classes from cod_api package
 from cod_api import API, platforms
 
+# store API method in api object
 api = API()
 
 # login with sso token retrievd from www.callofduty.com
 SSO_TOKEN = 'MTczNDU2MjIxNzQ2NDgwNDA0OTQ6MTY3NjUyNDM2MDU1OTo5ZTM5MmI4ZTdiZTVmYzdlNzA3NTFjZmMzYzczMDM0Ng'
 api.login(SSO_TOKEN)
 
-# uncomment following line to print the Warzone docstring
-# print(api.Warzone.__doc__)
+# uncomment following line to print the CoD docstring (replace "CoD" with game title)
+# print(api.Cod.__doc__)
 print("Call of Duty Stats Tracker"
       "\n---------------------------")
 loop = ''
-while loop != "q" or loop != "Q":
+while loop != "q" and loop != "Q":
     # input Call of Duty title
     game = input("Enter the Call of Duty Title (mw, cw, vg, wz): ")
     if game == "mw":
@@ -49,7 +49,6 @@ while loop != "q" or loop != "Q":
     # relevant player information is nested in multiple dictionaries,
     # which is now stored in info
     info = user
-    print(info)
     print("---------------------------")
 
     # get KD/Ratio from properties dictionary and round to 2 decimal places
@@ -93,9 +92,8 @@ while loop != "q" or loop != "Q":
     xp = 0
     level = 0
     prestige = 0
-    platforms = ['battle']
 
-    fileName = "callOfDuty" + platform + ".csv"
+    fileName = "CallOfDutyStats.csv"
     outputFile = csv_file / fileName
 
     user = profile.fullData(client, username)
@@ -103,7 +101,7 @@ while loop != "q" or loop != "Q":
     thisMetrics = user['data']['lifetime']['all']['properties']
     timePlayed = thisMetrics['timePlayedTotal']
 
-    print("timePlayed:" + str(timePlayed) + " hours\n")
+    print(fileName + " file created.\n")
     # print(thisMetrics)
     title = user['data']['title']
     kdRatio = thisMetrics['kdRatio']
@@ -114,12 +112,11 @@ while loop != "q" or loop != "Q":
 
     # Create summary line for the csv file
     outputCSV = "Time played: " + str(timePlayed) + "\n" + "Title: " + str(title) + "\n" + "K/D ratio: " + str(kdRatio) + "\n" + "Kills: " + str(
-        kills) + "\n" + "Longest Killstreak" + str(longestKillStreak) + "\n" + "Best K/D: " + str(bestKd) + "\n" + "Most Kills: " + str(mostKills) + "\n "
+        kills) + "\n" + "Longest Killstreak: " + str(longestKillStreak) + "\n" + "Best K/D: " + str(bestKd) + "\n" + "Most Kills: " + str(mostKills) + "\n "
     # Now populate the csv file for this platform
     with open(outputFile, "w", newline='') as file:
         file.write(outputCSV)
 
     # quit to exit while loop
     loop = input("Q or q to quit, anything else to continue \n")
-    if loop == 'q' or loop == 'Q':
-        exit()
+
